@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แดชบอร์ดแกนกระดาษทิชชู่ - ซีคอน ศรีนครินทร์</title>
+<script>
+  (function() {
+    const c = document.createElement('canvas'); c.width = c.height = 512;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#0369A1';
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(0, 0, 512, 512, 90) : ctx.rect(0, 0, 512, 512); ctx.fill();
+    ctx.font = '300px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('📊', 256, 275);
+    const url = c.toDataURL('image/png');
+    document.write(`<link rel="icon" type="image/png" href="${url}"><link rel="apple-touch-icon" href="${url}">`);
+  })();
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sarabun: ['Sarabun', 'sans-serif'], mitr: ['Mitr', 'sans-serif'] },
+        colors: {
+          grape:  '#7C3AED',
+          grapeD: '#5B21B6',
+          candy:  '#EC4899',
+          sky:    '#38BDF8',
+          mint:   '#10B981',
+          mintD:  '#059669',
+          tang:   '#FB923C',
+          tangD:  '#EA580C',
+          sun:    '#FBBF24',
+          ink:    '#3A2E52'
+        },
+        boxShadow: {
+          glass: '0 8px 32px rgba(124,58,237,0.14), 0 2px 8px rgba(124,58,237,0.08)',
+          glow: '0 6px 20px rgba(236,72,153,0.35)'
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body {
+    font-family: 'Sarabun', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #EDE4FF 0%, #FDE7F3 45%, #E0F5FF 100%);
+    background-attachment: fixed;
+  }
+  h1, h2, .font-display { font-family: 'Mitr', sans-serif; }
+  .glass {
+    background: rgba(255,255,255,0.62);
+    border: 1px solid rgba(255,255,255,0.75);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .bounce-btn { transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease; }
+  .bounce-btn:active { transform: scale(0.95); }
+  ::-webkit-scrollbar { height: 8px; width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #D8B4FE; border-radius: 999px; }
+  .modal-backdrop { background: rgba(58,46,82,0.6); backdrop-filter: blur(3px); }
+  @keyframes riseIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .rise-in { animation: riseIn .3s ease both; }
+  .header-blob { background: linear-gradient(135deg, #7C3AED 0%, #EC4899 55%, #38BDF8 100%); }
+  .kpi-card { background: rgba(255,255,255,0.68); border: 1px solid rgba(255,255,255,0.8); }
+  /* ===== หน้าล็อก: ไอคอนหัวใจเต้น + นาฬิกา + progress bar 60 วินาที ===== */
+  .no-lift:hover { transform: none !important; }
+  .tp-heartbeat-wrap { position: relative; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .tp-heartbeat {
+    position: relative; z-index: 1; transform-origin: 50% 50%;
+    animation: tpHeartbeat 1.3s ease-in-out infinite;
+    filter: drop-shadow(0 12px 18px rgba(124,58,237,0.28));
+  }
+  .tp-heartbeat-ring {
+    position: absolute; width: 16rem; height: 16rem; border-radius: 9999px;
+    background: radial-gradient(circle, rgba(236,72,153,0.30) 0%, rgba(124,58,237,0) 68%);
+    animation: tpHeartbeatGlow 1.3s ease-in-out infinite;
+  }
+  @keyframes tpHeartbeat {
+    0%   { transform: scale(1); }
+    14%  { transform: scale(1.16); }
+    28%  { transform: scale(1); }
+    42%  { transform: scale(1.10); }
+    70%, 100% { transform: scale(1); }
+  }
+  @keyframes tpHeartbeatGlow {
+    0%   { opacity: .35; transform: scale(.9); }
+    14%  { opacity: 1;   transform: scale(1.15); }
+    28%  { opacity: .4;  transform: scale(.95); }
+    42%  { opacity: .8;  transform: scale(1.08); }
+    70%, 100% { opacity: .35; transform: scale(.9); }
+  }
+  .lock-clock { display: flex; flex-direction: column; align-items: center; gap: .35rem; user-select: none; -webkit-user-select: none; cursor: default; caret-color: transparent; }
+  .lock-digital {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Courier New', monospace;
+    font-variant-numeric: tabular-nums; font-weight: 500; font-size: 3.1rem; line-height: 1;
+    letter-spacing: .04em; color: #7C3AED; text-shadow: 0 2px 12px rgba(124,58,237,0.25);
+  }
+  .lock-date { font-size: .95rem; color: #6B5B8A; }
+  .lock-progress {
+    height: 14px; border-radius: 9999px; background: rgba(124,58,237,0.14);
+    overflow: hidden; box-shadow: inset 0 1px 3px rgba(58,46,82,0.12);
+  }
+  .lock-progress-bar {
+    height: 100%; width: 0%; border-radius: 9999px;
+    background: linear-gradient(90deg, #EC4899 0%, #7C3AED 55%, #38BDF8 100%);
+    transition: width 1s linear;
+  }
+  .lock-progress-bar.no-anim { transition: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .tp-heartbeat, .tp-heartbeat-ring { animation: none; }
+  }
+  @media print {
+    .no-print { display: none !important; }
+    body { background: #fff; }
+    .glass { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; background: #fff; backdrop-filter: none; }
+  }
+</style>
+</head>
+<body class="text-ink min-h-screen pb-16">
+
+<!-- Login lock overlay: หัวใจเต้น + นาฬิกา + progress 1-60 วินาที + user/password -->
+<div id="dashboardLock" class="fixed inset-0 z-[100] overflow-y-auto" style="background: linear-gradient(160deg, #EDE4FF 0%, #FDE7F3 45%, #E0F5FF 100%);">
+  <div class="min-h-full flex flex-col items-center justify-center gap-5 px-4 py-8">
+
+    <div class="tp-heartbeat-wrap">
+      <div class="tp-heartbeat-ring"></div>
+      <div class="tp-heartbeat w-44 h-48 sm:w-52 sm:h-56" aria-hidden="true">
+        <svg viewBox="0 0 140 150" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="tpOuter" cx="38%" cy="32%" r="80%">
+              <stop offset="0" stop-color="#FFFFFF"/>
+              <stop offset="1" stop-color="#EADCFF"/>
+            </radialGradient>
+            <linearGradient id="tpCore" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#F9A8D4"/>
+              <stop offset="1" stop-color="#7C3AED"/>
+            </linearGradient>
+            <linearGradient id="tpSheet" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#FBF7FF"/>
+              <stop offset="1" stop-color="#FFFFFF"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="70" cy="144" rx="44" ry="5" fill="#7C3AED" opacity="0.16"/>
+          <path d="M96 86 H126 V132 Q121 136 116 132 Q111 136 106 132 Q101 136 96 132 Z" fill="url(#tpSheet)" stroke="#D8B4FE" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M96 106 H126" stroke="#D8B4FE" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle cx="70" cy="68" r="56" fill="url(#tpOuter)" stroke="#A78BFA" stroke-width="4"/>
+          <circle cx="70" cy="68" r="46" stroke="#D8B4FE" stroke-width="2" opacity="0.7"/>
+          <circle cx="70" cy="68" r="37" stroke="#D8B4FE" stroke-width="2" opacity="0.55"/>
+          <circle cx="70" cy="68" r="28" fill="url(#tpCore)"/>
+          <circle cx="70" cy="68" r="17" fill="#FBF7FF" stroke="#5B21B6" stroke-width="2.5"/>
+          <path d="M57 62 A14 14 0 0 1 70 54" stroke="#F9A8D4" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="w-full max-w-xs text-center">
+      <div class="lock-clock mb-3" aria-label="เวลาปัจจุบัน">
+        <div id="lockClockTime" class="lock-digital">--:--:--</div>
+        <div id="lockClockDate" class="lock-date">&nbsp;</div>
+      </div>
+      <div class="lock-progress" role="progressbar" aria-label="ตัวนับ 60 วินาที" aria-valuemin="0" aria-valuemax="60" aria-valuenow="1" id="lockProgress">
+        <div id="lockProgressBar" class="lock-progress-bar"></div>
+      </div>
+    </div>
+
+    <form id="lockForm" class="glass no-lift rounded-3xl shadow-glass p-6 w-full max-w-xs text-center space-y-4">
+      <div>
+        <h2 class="text-base font-semibold text-ink">🔒 กรุณาเข้าสู่ระบบ</h2>
+        <p class="text-sm text-ink/60 mt-1">กรอกชื่อผู้ใช้และรหัสผ่านเพื่อดูข้อมูล</p>
+      </div>
+      <input id="lockUserInput" type="text" placeholder="👤 ชื่อผู้ใช้ (user)" autocomplete="username" autocapitalize="none" spellcheck="false"
+        class="w-full rounded-2xl border-2 border-grape/15 px-4 py-3 text-base text-center shadow-sm focus:outline-none focus:ring-2 focus:ring-candy/40 focus:border-candy">
+      <input id="lockPasswordInput" type="password" placeholder="🔑 รหัสผ่าน (password)" autocomplete="current-password"
+        class="w-full rounded-2xl border-2 border-grape/15 px-4 py-3 text-base text-center shadow-sm focus:outline-none focus:ring-2 focus:ring-candy/40 focus:border-candy">
+      <label class="flex items-center justify-center gap-2 text-sm text-ink cursor-pointer select-none">
+        <input id="lockRememberCheck" type="checkbox" class="w-4 h-4 accent-purple-600">
+        <span>จดจำรหัสผ่าน (ครั้งหน้าเข้าดูได้เลย)</span>
+      </label>
+      <p id="lockErrorMsg" class="hidden text-sm text-red-600"></p>
+      <button type="submit" class="bounce-btn text-white font-semibold w-full rounded-2xl py-3 transition-colors" style="background:linear-gradient(135deg,#EC4899,#7C3AED);">เข้าสู่ระบบ 🔓</button>
+    </form>
+  </div>
+</div>
+
+<div id="dashboardApp" style="display:none;">
+
+<header class="max-w-4xl mx-auto px-4 pt-7 pb-4">
+  <div class="header-blob rounded-3xl p-5 shadow-glow flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-2xl bg-white/25 flex items-center justify-center shrink-0 text-2xl">📊</div>
+      <div>
+        <h1 class="text-lg sm:text-xl font-semibold text-white leading-tight">แดชบอร์ดแกนกระดาษทิชชู่ - สาขาศรีนครินทร์ 🌸</h1>
+        <p id="periodSubtitle" class="text-xs sm:text-sm text-white/85 mt-0.5">สรุปยอดเบิก-คืน</p>
+      </div>
+    </div>
+  </div>
+  <div class="no-print flex justify-end mt-3">
+    <button id="logoutBtn" type="button" class="bounce-btn shrink-0 inline-flex items-center gap-1.5 rounded-full glass px-4 py-2 text-xs font-medium text-grapeD shadow-glass">🚪 ออกจากระบบ</button>
+  </div>
+  <nav class="no-print mt-3 grid grid-cols-2 gap-2" aria-label="เมนูหลัก">
+    <a href="dashboard.html" aria-current="page" class="bounce-btn text-center rounded-2xl px-2 py-2.5 text-sm font-semibold text-white shadow-glow pointer-events-none" style="background:linear-gradient(135deg,#EC4899,#7C3AED);">📊 แดชบอร์ด</a>
+    <a href="summary.html" class="bounce-btn text-center rounded-2xl px-2 py-2.5 text-sm font-semibold glass text-grapeD shadow-glass">🗂️ สรุป / แก้ไข</a>
+  </nav>
+</header>
+
+<main class="max-w-4xl mx-auto px-4 space-y-4">
+
+  <!-- ============================================================= -->
+  <!-- EXPORT (อยู่บนสุดของหน้า) -->
+  <!-- ============================================================= -->
+  <section class="glass rounded-3xl shadow-glass p-5 no-print">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <div class="text-sm font-medium text-ink">⬇️ Export ข้อมูล</div>
+        <div class="text-xs text-ink/50 mt-0.5">ส่งออกตามตัวกรองที่แสดงผลอยู่ด้านล่าง</div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 w-full sm:w-auto sm:min-w-[320px]">
+        <button id="exportCsvBtn" type="button" class="bounce-btn rounded-xl border-2 border-grape/20 text-ink text-sm font-medium py-2">CSV</button>
+        <button id="exportExcelBtn" type="button" class="bounce-btn rounded-xl border-2 border-grape/20 text-ink text-sm font-medium py-2">Excel</button>
+        <button id="exportPdfBtn" type="button" class="bounce-btn rounded-xl border-2 border-grape/20 text-ink text-sm font-medium py-2">PDF</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- FILTERS -->
+  <!-- ============================================================= -->
+  <section class="glass rounded-3xl shadow-glass p-5 space-y-4 no-print">
+
+    <div>
+      <label class="text-xs text-ink/60 mb-1.5 block font-medium">⏱️ ช่วงเวลาที่ดู</label>
+      <div id="periodTabs" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button type="button" data-period="today" class="period-btn rounded-xl py-2 text-sm font-medium border-2 border-grape/15">วันนี้</button>
+        <button type="button" data-period="7days" class="period-btn rounded-xl py-2 text-sm font-medium border-2 border-grape/15">7 วันล่าสุด</button>
+        <button type="button" data-period="month" class="period-btn rounded-xl py-2 text-sm font-medium border-2 border-grape/15">เดือนนี้</button>
+        <button type="button" data-period="custom" class="period-btn rounded-xl py-2 text-sm font-medium border-2 border-grape/15">กำหนดเอง</button>
+      </div>
+    </div>
+
+    <div id="customRangeControls" class="hidden grid grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-ink/60 mb-1 block">จากวันที่</label>
+        <input id="dateFromInput" type="date" class="w-full rounded-xl border-2 border-grape/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-candy/40 focus:border-candy">
+      </div>
+      <div>
+        <label class="text-xs text-ink/60 mb-1 block">ถึงวันที่</label>
+        <input id="dateToInput" type="date" class="w-full rounded-xl border-2 border-grape/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-candy/40 focus:border-candy">
+      </div>
+    </div>
+
+    <div class="h-px bg-grape/10"></div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-ink/60 mb-1 block">ชั้น (Floor)</label>
+        <select id="filterFloor" class="w-full rounded-xl border-2 border-grape/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-candy/40 focus:border-candy">
+          <option value="all">ทั้งหมด</option>
+          <option value="B">B</option><option value="1">1</option><option value="2">2</option>
+          <option value="3">3</option><option value="4">4</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-ink/60 mb-1 block">โซน (Zone)</label>
+        <select id="filterZone" class="w-full rounded-xl border-2 border-grape/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-candy/40 focus:border-candy">
+          <option value="all">ทั้งหมด</option>
+          <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-ink/60 mb-1 block">ประเภทห้องน้ำ</label>
+        <select id="filterType" class="w-full rounded-xl border-2 border-grape/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-candy/40 focus:border-candy">
+          <option value="all">ทั้งหมด</option>
+          <option value="men">ห้องน้ำชาย</option>
+          <option value="women">ห้องน้ำหญิง</option>
+          <option value="family">ครอบครัว / คนพิการ</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-ink/60 mb-1 block">สถานที่พิเศษ</label>
+        <select id="filterLocation" class="w-full rounded-xl border-2 border-grape/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-candy/40 focus:border-candy">
+          <option value="all">ทั้งหมด</option>
+          <option value="B1/H">B1/H</option>
+          <option value="2/K">2/K</option>
+          <option value="3/K">3/K</option>
+          <option value="Yoyo(โยโย่)">Yoyo(โยโย่)</option>
+          <option value="MunxMun(มันมัน)">MunxMun(มันมัน)</option>
+          <option value="office_7">office_7</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex gap-3 pt-1">
+      <button id="applyBtn" type="button" class="bounce-btn flex-1 rounded-xl text-white font-medium py-2.5" style="background:linear-gradient(135deg,#EC4899,#7C3AED);">✅ แสดงผล</button>
+      <button id="resetBtn" type="button" class="bounce-btn rounded-xl border-2 border-grape/20 text-ink font-medium px-4 py-2.5">↺ รีเซ็ต</button>
+    </div>
+
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- MALL VISITORS INPUT -->
+  <!-- ============================================================= -->
+  <section class="glass rounded-3xl shadow-glass p-5 no-print">
+    <label class="text-sm font-medium text-ink mb-1.5 block">🚶 ยอดคนเข้าห้างสรรพสินค้า (ช่วงเวลาที่เลือก)</label>
+    <div class="flex gap-3 items-center">
+      <input id="mallVisitorsInput" type="number" min="0" placeholder="กรอกจำนวนคน" class="flex-1 rounded-xl border-2 border-grape/15 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-candy/40 focus:border-candy">
+      <button id="recalcVisitorsBtn" type="button" class="bounce-btn rounded-xl text-white text-sm font-medium px-4 py-2.5" style="background:linear-gradient(135deg,#EC4899,#7C3AED);">คำนวณ</button>
+    </div>
+    <p class="text-xs text-ink/50 mt-2">เฉลี่ย 1 ม้วน / คน = ยอดคนเข้าห้าง ÷ ม้วนคืนรวม (ม้วนที่ใช้จริงในช่วงเวลานี้)</p>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- KPI CARDS -->
+  <!-- ============================================================= -->
+  <section class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div class="kpi-card rounded-2xl shadow-glass p-4 text-center">
+      <div class="text-xl mb-1">🟢</div>
+      <div class="text-xs text-ink/50 mb-1">เบิกรวม</div>
+      <div id="statDispensed" class="text-lg font-bold text-mintD">0</div>
+    </div>
+    <div class="kpi-card rounded-2xl shadow-glass p-4 text-center">
+      <div class="text-xl mb-1">🟠</div>
+      <div class="text-xs text-ink/50 mb-1">ม้วนที่คืนรวม</div>
+      <div id="statReturned" class="text-lg font-bold text-tangD">0</div>
+    </div>
+    <div class="kpi-card rounded-2xl shadow-glass p-4 text-center">
+      <div class="text-xl mb-1">📦</div>
+      <div class="text-xs text-ink/50 mb-1">ใช้สุทธิรวม</div>
+      <div id="statNet" class="text-lg font-bold text-grapeD">0</div>
+    </div>
+    <div class="kpi-card rounded-2xl shadow-glass p-4 text-center">
+      <div class="text-xl mb-1">📅</div>
+      <div class="text-xs text-ink/50 mb-1">เฉลี่ยเบิก/วัน</div>
+      <div id="statAvgPerDay" class="text-lg font-bold text-grapeD">0</div>
+    </div>
+    <div class="kpi-card rounded-2xl shadow-glass p-4 text-center">
+      <div class="text-xl mb-1">📈</div>
+      <div class="text-xs text-ink/50 mb-1">วันที่คืนสูงสุด</div>
+      <div id="statMaxDay" class="text-sm font-semibold text-ink leading-tight">—</div>
+    </div>
+    <div class="kpi-card rounded-2xl shadow-glass p-4 text-center">
+      <div class="text-xl mb-1">📉</div>
+      <div class="text-xs text-ink/50 mb-1">วันที่คืนต่ำสุด</div>
+      <div id="statMinDay" class="text-sm font-semibold text-ink leading-tight">—</div>
+    </div>
+    <div class="kpi-card rounded-2xl shadow-glass p-4 text-center col-span-2 sm:col-span-3">
+      <div class="text-xs text-ink/50 mb-1">🚶 เฉลี่ย 1 ม้วน / คน</div>
+      <div id="statVisitorsPerRoll" class="text-lg font-bold text-candy">— คน/ม้วน</div>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- CHARTS: DISPENSED VS RETURNED (LINE), ZONE/FLOOR SHARE (DOUGHNUT) -->
+  <!-- ============================================================= -->
+  <section class="grid sm:grid-cols-2 gap-4">
+    <div class="glass rounded-3xl shadow-glass p-5">
+      <div class="text-sm font-medium text-ink mb-3">📈 ยอดเบิก vs ยอดคืน รายวัน</div>
+      <div class="relative" style="height:260px;"><canvas id="trendChart"></canvas></div>
+      <p id="trendChartEmptyMsg" class="hidden text-center text-sm text-ink/50 py-10">ไม่มีข้อมูลในช่วงเวลาที่เลือก</p>
+    </div>
+    <div class="glass rounded-3xl shadow-glass p-5">
+      <div class="text-sm font-medium text-ink mb-3">🍩 สัดส่วนการใช้ตามโซน/ชั้น</div>
+      <div class="relative" style="height:260px;"><canvas id="zoneShareChart"></canvas></div>
+      <p id="zoneShareEmptyMsg" class="hidden text-center text-sm text-ink/50 py-10">ไม่มีข้อมูลในช่วงเวลาที่เลือก</p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- TYPE BREAKDOWN -->
+  <!-- ============================================================= -->
+  <section class="glass rounded-3xl shadow-glass p-5">
+    <div class="text-sm font-medium text-ink mb-3">🧻 สัดส่วนม้วนที่เบิกแบ่งตามประเภท</div>
+    <div id="typeBreakdownWrap" class="space-y-3"></div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- RANKINGS -->
+  <!-- ============================================================= -->
+  <section class="grid sm:grid-cols-2 gap-4">
+    <div class="glass rounded-3xl shadow-glass p-5">
+      <div class="text-sm font-medium text-ink mb-3">🏆 อันดับจุดที่คืนมากที่สุด — ชั้น</div>
+      <div id="rankFloorWrap" class="space-y-2"></div>
+    </div>
+    <div class="glass rounded-3xl shadow-glass p-5">
+      <div class="text-sm font-medium text-ink mb-3">🏆 อันดับจุดที่คืนมากที่สุด — โซน</div>
+      <div id="rankZoneWrap" class="space-y-2"></div>
+    </div>
+    <div class="glass rounded-3xl shadow-glass p-5">
+      <div class="text-sm font-medium text-ink mb-3">🏆 อันดับจุดที่คืนมากที่สุด — สถานที่พิเศษ</div>
+      <div id="rankLocationWrap" class="space-y-2"></div>
+    </div>
+    <div class="glass rounded-3xl shadow-glass p-5">
+      <div class="text-sm font-medium text-ink mb-3">🙋 อันดับพนักงานที่บันทึกมากที่สุด</div>
+      <div id="rankStaffWrap" class="space-y-2"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- LOADING -->
+  <!-- ============================================================= -->
+  <p id="globalLoadingMsg" class="text-center text-sm text-ink/50 py-6">กำลังโหลดข้อมูล...</p>
+  <p id="globalErrorMsg" class="hidden text-center text-sm text-red-600 py-6"></p>
+
+  <!-- ============================================================= -->
+  <!-- TABLE -->
+  <!-- ============================================================= -->
+  <section class="hidden glass rounded-3xl shadow-glass p-5" id="tableSection">
+    <div class="flex items-center justify-between mb-4">
+      <div class="text-sm font-medium text-ink">📋 รายการที่ตรงกับตัวกรอง</div>
+      <div id="rowCountBadge" class="text-xs text-ink/50"></div>
+    </div>
+    <div class="overflow-x-auto -mx-1">
+      <table id="dataTable" class="min-w-[900px] w-full text-xs">
+        <thead>
+          <tr class="text-ink/50 border-b-2 border-grape/15">
+            <th rowspan="2" class="text-left font-medium px-2 py-2 whitespace-nowrap align-bottom">วันเวลา</th>
+            <th rowspan="2" class="text-left font-medium px-2 py-2 whitespace-nowrap align-bottom">พนักงาน</th>
+            <th rowspan="2" class="text-left font-medium px-2 py-2 whitespace-nowrap align-bottom">สถานที่</th>
+            <th rowspan="2" class="text-left font-medium px-2 py-2 whitespace-nowrap align-bottom">สถานที่พิเศษ</th>
+            <th colspan="3" class="text-center font-medium px-2 py-1.5 whitespace-nowrap border-b border-mint/20 bg-mint/10 border-l-2 border-mint/30">เบิก</th>
+            <th colspan="3" class="text-center font-medium px-2 py-1.5 whitespace-nowrap border-b border-tang/20 bg-tang/10 border-l-2 border-tang/30">คืน</th>
+            <th rowspan="2" class="text-center font-medium px-2 py-2 whitespace-nowrap no-print align-bottom">รูปภาพ</th>
+            <th rowspan="2" class="text-left font-medium px-2 py-2 whitespace-nowrap align-bottom">หมายเหตุ</th>
+          </tr>
+          <tr class="text-ink/50 border-b-2 border-grape/15">
+            <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-mint/10 border-l-2 border-mint/30">ชาย</th>
+            <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-mint/10">หญิง</th>
+            <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-mint/10">ครอบครัว</th>
+            <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-tang/10 border-l-2 border-tang/30">ชาย</th>
+            <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-tang/10">หญิง</th>
+            <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-tang/10">ครอบครัว</th>
+          </tr>
+        </thead>
+        <tbody id="rowsTableBody" class="divide-y divide-grape/10"></tbody>
+      </table>
+    </div>
+    <p id="tableEmptyMsg" class="hidden text-center text-sm text-ink/50 py-8">ไม่มีข้อมูลในช่วงเวลาที่เลือก</p>
+  </section>
+
+</main>
+
+</div>
+<!-- /#dashboardApp -->
+
+<div id="imageModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4 no-print">
+  <div class="relative max-w-lg w-full">
+    <button id="closeModalBtn" class="bounce-btn absolute -top-11 right-0 w-9 h-9 rounded-full bg-white/90 text-ink flex items-center justify-center">✕</button>
+    <img id="modalImage" class="w-full rounded-2xl shadow-xl" alt="รูปหลักฐาน">
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG — ใส่ค่าจริงของสาขาศรีนครินทร์ตรงนี้ (ใช้ค่าเดียวกับ index.html)
+   ===================================================================== */
+const SUPABASE_URL = "https://tkklsupaxezxnxpacidk.supabase.co";        // <-- ใส่ Supabase Project URL ของสาขาศรีนครินทร์
+const SUPABASE_ANON_KEY = "sb_publishable_Ji9G34XqBU8-zHAyRRevQQ_IIWtUuUz";   // <-- ใส่ Supabase anon/publishable key
+const SUPABASE_TABLE = "toilet_paper_logs_sdc";
+
+/* ===================================================================== */
+
+/* ---------------------------- Login lock ---------------------------- */
+// เก็บเฉพาะค่า SHA-256 ของ "ชื่อผู้ใช้:รหัสผ่าน" (ชื่อผู้ใช้เป็นตัวพิมพ์เล็ก) ไม่เก็บรหัสผ่านเป็นข้อความตรงๆ
+// (เป็นการล็อกระดับหน้าเว็บเท่านั้น — ข้อมูลใน Supabase ยังอ่านได้ด้วย anon key)
+const AUTH_HASH = '7f29a30a88553071173763bbfe0b11a717fe80c5d2d19360ff96d022db14350d';
+const AUTH_SESSION_KEY = 'srn_dashboardUnlocked';
+const AUTH_REMEMBER_KEY = 'srn_dashboardRemember';
+
+const dashboardLockEl = document.getElementById('dashboardLock');
+const dashboardAppEl = document.getElementById('dashboardApp');
+const lockForm = document.getElementById('lockForm');
+const lockUserInput = document.getElementById('lockUserInput');
+const lockPasswordInput = document.getElementById('lockPasswordInput');
+const lockRememberCheck = document.getElementById('lockRememberCheck');
+const lockErrorMsg = document.getElementById('lockErrorMsg');
+const lockClockTime = document.getElementById('lockClockTime');
+const lockClockDate = document.getElementById('lockClockDate');
+const lockProgress = document.getElementById('lockProgress');
+const lockProgressBar = document.getElementById('lockProgressBar');
+
+function storeGet(store, key) { try { return store.getItem(key); } catch (e) { return null; } }
+function storeSet(store, key, val) { try { store.setItem(key, val); } catch (e) { /* ignore */ } }
+function storeRemove(store, key) { try { store.removeItem(key); } catch (e) { /* ignore */ } }
+
+/* SHA-256 แบบเขียนเอง ใช้สำรองกรณีเบราว์เซอร์ไม่มี crypto.subtle (เช่น เปิดผ่าน http) */
+function sha256Bytes(bytes) {
+  const K = [], H = [];
+  const isPrime = (n) => { for (let i = 2; i * i <= n; i++) if (n % i === 0) return false; return true; };
+  const frac = (x) => ((x - Math.floor(x)) * 4294967296) | 0;
+  for (let c = 2, n = 0; n < 64; c++) {
+    if (isPrime(c)) { if (n < 8) H[n] = frac(Math.pow(c, 0.5)); K[n] = frac(Math.pow(c, 1 / 3)); n++; }
+  }
+  const l = bytes.length;
+  const padded = Array.from(bytes);
+  padded.push(0x80);
+  while (padded.length % 64 !== 56) padded.push(0);
+  const hi = Math.floor((l * 8) / 4294967296), lo = (l * 8) >>> 0;
+  for (let i = 3; i >= 0; i--) padded.push((hi >>> (i * 8)) & 255);
+  for (let i = 3; i >= 0; i--) padded.push((lo >>> (i * 8)) & 255);
+  const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+  let h = H.slice();
+  for (let off = 0; off < padded.length; off += 64) {
+    const w = new Array(64);
+    for (let i = 0; i < 16; i++) {
+      w[i] = (padded[off + 4 * i] << 24) | (padded[off + 4 * i + 1] << 16) | (padded[off + 4 * i + 2] << 8) | padded[off + 4 * i + 3];
+    }
+    for (let i = 16; i < 64; i++) {
+      const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+      const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+    }
+    let [a, b, c, d, e, f, g, hh] = h;
+    for (let i = 0; i < 64; i++) {
+      const S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
+      const ch = (e & f) ^ (~e & g);
+      const t1 = (hh + S1 + ch + K[i] + w[i]) | 0;
+      const S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const t2 = (S0 + maj) | 0;
+      hh = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    h = [(h[0] + a) | 0, (h[1] + b) | 0, (h[2] + c) | 0, (h[3] + d) | 0, (h[4] + e) | 0, (h[5] + f) | 0, (h[6] + g) | 0, (h[7] + hh) | 0];
+  }
+  return h.map((x) => ('00000000' + (x >>> 0).toString(16)).slice(-8)).join('');
+}
+
+async function sha256Hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  try {
+    if (window.crypto && crypto.subtle) {
+      const buf = await crypto.subtle.digest('SHA-256', bytes);
+      return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) { /* ใช้ตัวสำรองด้านล่าง */ }
+  return sha256Bytes(bytes);
+}
+
+/* นาฬิกาดิจิตอลเวลาจริง + แถบ progress แถบเดียว (วินาทีที่ 1-60 ของนาที วิ่งเต็มแล้วรีเซ็ตวนใหม่) */
+const LOCK_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const LOCK_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+let lockLastSec = -1;
+let lockTimer = null;
+function lockStep() {
+  const now = new Date();
+  const sec = now.getSeconds();
+  if (sec === lockLastSec) return;
+  lockLastSec = sec;
+  const tickVal = sec === 0 ? 60 : sec;
+  if (tickVal === 1) {
+    lockProgressBar.classList.add('no-anim');
+    lockProgressBar.style.width = '0%';
+    void lockProgressBar.offsetWidth;
+    lockProgressBar.classList.remove('no-anim');
+  }
+  const p2 = (n) => String(n).padStart(2, '0');
+  lockClockTime.textContent = p2(now.getHours()) + ':' + p2(now.getMinutes()) + ':' + p2(sec);
+  lockClockDate.textContent = 'วัน' + LOCK_DAYS[now.getDay()] + 'ที่ ' + now.getDate() + ' ' + LOCK_MONTHS[now.getMonth()] + ' พ.ศ. ' + (now.getFullYear() + 543);
+  lockProgress.setAttribute('aria-valuenow', String(tickVal));
+  lockProgressBar.style.width = (tickVal / 60 * 100) + '%';
+}
+function startLockTimer() { if (lockTimer) return; lockStep(); lockTimer = setInterval(lockStep, 250); }
+function stopLockTimer() { if (lockTimer) { clearInterval(lockTimer); lockTimer = null; } }
+
+function unlockDashboard() {
+  stopLockTimer();
+  dashboardLockEl.style.display = 'none';
+  dashboardAppEl.style.display = '';
+  storeSet(sessionStorage, AUTH_SESSION_KEY, 'true');
+}
+
+function logoutDashboard() {
+  storeRemove(sessionStorage, AUTH_SESSION_KEY);
+  storeRemove(localStorage, AUTH_REMEMBER_KEY);
+  location.reload();
+}
+document.getElementById('logoutBtn').addEventListener('click', logoutDashboard);
+
+// ผ่านอยู่แล้วในแท็บนี้ หรือเคยติ๊ก "จดจำรหัสผ่าน" ไว้ → เข้าได้เลย
+if (storeGet(sessionStorage, AUTH_SESSION_KEY) === 'true' || storeGet(localStorage, AUTH_REMEMBER_KEY) === AUTH_HASH) {
+  unlockDashboard();
+} else {
+  startLockTimer();
+}
+
+lockForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const user = lockUserInput.value.trim().toLowerCase();
+  const hash = await sha256Hex(user + ':' + lockPasswordInput.value);
+  if (hash === AUTH_HASH) {
+    lockErrorMsg.classList.add('hidden');
+    if (lockRememberCheck.checked) storeSet(localStorage, AUTH_REMEMBER_KEY, AUTH_HASH);
+    else storeRemove(localStorage, AUTH_REMEMBER_KEY);
+    unlockDashboard();
+  } else {
+    lockErrorMsg.textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง ลองอีกครั้ง';
+    lockErrorMsg.classList.remove('hidden');
+    lockPasswordInput.value = '';
+    lockPasswordInput.focus();
+  }
+});
+
+function supabaseReady() { return SUPABASE_URL !== "" && SUPABASE_ANON_KEY !== ""; }
+function supaHeaders(extra) {
+  return Object.assign({ 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }, extra || {});
+}
+async function supaFetch(url, options, actionLabel) {
+  let res;
+  try { res = await fetch(url, options); }
+  catch (networkErr) { throw new Error(`${actionLabel} ไม่สำเร็จ (เชื่อมต่อ ${url} ไม่ได้): ${networkErr.message}`); }
+  return res;
+}
+async function supaSelect(table, queryString) {
+  const url = `${SUPABASE_URL}/rest/v1/${table}?${queryString}`;
+  const res = await supaFetch(url, { method: 'GET', headers: supaHeaders() }, 'โหลดข้อมูล');
+  if (!res.ok) {
+    const errText = await res.text().catch(() => res.statusText);
+    throw new Error(`โหลดข้อมูลไม่สำเร็จ (${res.status}): ${errText}`);
+  }
+  return res.json();
+}
+
+/* ---------------------------- State ---------------------------- */
+
+const state = {
+  period: 'today',
+  floor: 'all', zone: 'all', location: 'all', type: 'all',
+  lastFilteredRows: []
+};
+
+let trendChartInstance = null;
+let zoneShareChartInstance = null;
+
+/* ---------------------------- DOM refs ---------------------------- */
+
+const periodTabs = document.getElementById('periodTabs');
+const customRangeControls = document.getElementById('customRangeControls');
+const dateFromInput = document.getElementById('dateFromInput');
+const dateToInput = document.getElementById('dateToInput');
+const filterFloor = document.getElementById('filterFloor');
+const filterZone = document.getElementById('filterZone');
+const filterLocation = document.getElementById('filterLocation');
+const filterType = document.getElementById('filterType');
+const applyBtn = document.getElementById('applyBtn');
+const resetBtn = document.getElementById('resetBtn');
+const mallVisitorsInput = document.getElementById('mallVisitorsInput');
+const recalcVisitorsBtn = document.getElementById('recalcVisitorsBtn');
+const periodSubtitle = document.getElementById('periodSubtitle');
+
+const statDispensed = document.getElementById('statDispensed');
+const statReturned = document.getElementById('statReturned');
+const statNet = document.getElementById('statNet');
+const statAvgPerDay = document.getElementById('statAvgPerDay');
+const statMaxDay = document.getElementById('statMaxDay');
+const statMinDay = document.getElementById('statMinDay');
+const statVisitorsPerRoll = document.getElementById('statVisitorsPerRoll');
+
+const typeBreakdownWrap = document.getElementById('typeBreakdownWrap');
+const rankFloorWrap = document.getElementById('rankFloorWrap');
+const rankZoneWrap = document.getElementById('rankZoneWrap');
+const rankLocationWrap = document.getElementById('rankLocationWrap');
+const rankStaffWrap = document.getElementById('rankStaffWrap');
+
+const globalLoadingMsg = document.getElementById('globalLoadingMsg');
+const globalErrorMsg = document.getElementById('globalErrorMsg');
+const rowsTableBody = document.getElementById('rowsTableBody');
+const tableEmptyMsg = document.getElementById('tableEmptyMsg');
+const rowCountBadge = document.getElementById('rowCountBadge');
+
+/* ---------------------------- Date helpers ---------------------------- */
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+function toDateInputValue(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+
+function setPeriodUI(period) {
+  state.period = period;
+  document.querySelectorAll('.period-btn').forEach(btn => {
+    const active = btn.dataset.period === period;
+    btn.classList.toggle('text-white', active);
+    btn.style.background = active ? 'linear-gradient(135deg,#EC4899,#7C3AED)' : '';
+    btn.classList.toggle('text-ink', !active);
+    btn.classList.toggle('border-transparent', active);
+  });
+  customRangeControls.classList.toggle('hidden', period !== 'custom');
+  if (period === 'today') {
+    const today = new Date();
+    dateFromInput.value = toDateInputValue(today);
+    dateToInput.value = toDateInputValue(today);
+  } else if (period === '7days') {
+    const today = new Date();
+    const from = new Date(today); from.setDate(from.getDate() - 6);
+    dateFromInput.value = toDateInputValue(from);
+    dateToInput.value = toDateInputValue(today);
+  } else if (period === 'month') {
+    const today = new Date();
+    const from = new Date(today.getFullYear(), today.getMonth(), 1);
+    dateFromInput.value = toDateInputValue(from);
+    dateToInput.value = toDateInputValue(today);
+  }
+}
+
+periodTabs.addEventListener('click', (e) => {
+  const btn = e.target.closest('.period-btn');
+  if (!btn) return;
+  setPeriodUI(btn.dataset.period);
+});
+
+function toLocalDateKey(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+function updatePeriodSubtitle() {
+  const labels = { today: 'วันนี้', '7days': '7 วันล่าสุด', month: 'เดือนนี้', custom: 'ช่วงที่กำหนดเอง' };
+  periodSubtitle.textContent = `${labels[state.period] || ''} (${dateFromInput.value} ถึง ${dateToInput.value})`;
+}
+
+/* ---------------------------- Query range ---------------------------- */
+
+function computeQueryDateRange() {
+  const from = dateFromInput.value;
+  const toDate = new Date(dateToInput.value);
+  toDate.setDate(toDate.getDate() + 1);
+  return { fromISO: `${from}T00:00:00`, toISO: `${toDateInputValue(toDate)}T00:00:00` };
+}
+
+async function fetchRows() {
+  const { fromISO, toISO } = computeQueryDateRange();
+  let qs = 'select=*&order=created_at.asc&limit=10000';
+  if (fromISO) qs += `&created_at=gte.${encodeURIComponent(fromISO)}`;
+  if (toISO) qs += `&created_at=lt.${encodeURIComponent(toISO)}`;
+  return supaSelect(SUPABASE_TABLE, qs);
+}
+
+function rowMatchesFilters(row) {
+  if (state.floor !== 'all' && row.floor !== state.floor) return false;
+  if (state.zone !== 'all' && row.zone !== state.zone) return false;
+  if (state.location !== 'all' && row.special_location !== state.location) return false;
+  return true;
+}
+
+function typeValues(row) {
+  if (state.type === 'men') return { dispensed: row.men_dispensed || 0, returned: row.men_returned || 0 };
+  if (state.type === 'women') return { dispensed: row.women_dispensed || 0, returned: row.women_returned || 0 };
+  if (state.type === 'family') return { dispensed: row.family_dispensed || 0, returned: row.family_returned || 0 };
+  return {
+    dispensed: (row.men_dispensed || 0) + (row.women_dispensed || 0) + (row.family_dispensed || 0),
+    returned: (row.men_returned || 0) + (row.women_returned || 0) + (row.family_returned || 0)
+  };
+}
+
+function dailySeriesForRange(rows) {
+  const fromDate = new Date(dateFromInput.value);
+  const toDate = new Date(dateToInput.value);
+  const dayMap = {};
+  const cur = new Date(fromDate);
+  while (cur <= toDate) { dayMap[toDateInputValue(cur)] = { dispensed: 0, returned: 0 }; cur.setDate(cur.getDate() + 1); }
+
+  rows.forEach(row => {
+    const key = toLocalDateKey(row.created_at);
+    if (!(key in dayMap)) return;
+    const { dispensed, returned } = typeValues(row);
+    dayMap[key].dispensed += dispensed;
+    dayMap[key].returned += returned;
+  });
+
+  const keys = Object.keys(dayMap).sort();
+  return keys.map(k => ({ date: k, dispensed: dayMap[k].dispensed, returned: dayMap[k].returned }));
+}
+
+/* ---------------------------- Charts (Chart.js) ---------------------------- */
+
+function renderTrendChart(dailySeries) {
+  const canvas = document.getElementById('trendChart');
+  const emptyMsg = document.getElementById('trendChartEmptyMsg');
+  const hasData = dailySeries.some(d => d.dispensed > 0 || d.returned > 0);
+
+  if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+
+  if (!dailySeries.length || !hasData) {
+    canvas.classList.add('hidden');
+    emptyMsg.classList.remove('hidden');
+    return;
+  }
+  canvas.classList.remove('hidden');
+  emptyMsg.classList.add('hidden');
+
+  const labels = dailySeries.map(d => { const [y, m, dd] = d.date.split('-'); return `${dd}/${m}`; });
+
+  trendChartInstance = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'เบิก', data: dailySeries.map(d => d.dispensed),
+          borderColor: '#059669', backgroundColor: 'rgba(16,185,129,0.15)',
+          tension: 0.35, fill: true, pointRadius: 3, pointBackgroundColor: '#059669'
+        },
+        {
+          label: 'คืน', data: dailySeries.map(d => d.returned),
+          borderColor: '#EA580C', backgroundColor: 'rgba(251,146,60,0.15)',
+          tension: 0.35, fill: true, pointRadius: 3, pointBackgroundColor: '#EA580C'
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'Sarabun' } } } },
+      scales: {
+        x: { ticks: { font: { family: 'Sarabun', size: 10 } }, grid: { display: false } },
+        y: { beginAtZero: true, ticks: { font: { family: 'Sarabun', size: 10 } }, grid: { color: 'rgba(124,58,237,0.08)' } }
+      }
+    }
+  });
+}
+
+function renderZoneShareChart(rows) {
+  const canvas = document.getElementById('zoneShareChart');
+  const emptyMsg = document.getElementById('zoneShareEmptyMsg');
+
+  const totals = {};
+  rows.forEach(row => {
+    const { returned } = typeValues(row);
+    if (returned <= 0) return;
+    let key;
+    if (row.special_location) key = row.special_location;
+    else if (row.floor || row.zone) key = [row.floor ? `ชั้น ${row.floor}` : null, row.zone ? `โซน ${row.zone}` : null].filter(Boolean).join(' / ');
+    else key = 'ไม่ระบุ';
+    totals[key] = (totals[key] || 0) + returned;
+  });
+
+  if (zoneShareChartInstance) { zoneShareChartInstance.destroy(); zoneShareChartInstance = null; }
+
+  const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) {
+    canvas.classList.add('hidden');
+    emptyMsg.classList.remove('hidden');
+    return;
+  }
+  canvas.classList.remove('hidden');
+  emptyMsg.classList.add('hidden');
+
+  const palette = ['#7C3AED', '#EC4899', '#38BDF8', '#10B981', '#FB923C', '#FBBF24', '#A78BFA', '#F472B6'];
+
+  zoneShareChartInstance = new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: entries.map(e => e[0]),
+      datasets: [{ data: entries.map(e => e[1]), backgroundColor: entries.map((_, i) => palette[i % palette.length]), borderColor: '#fff', borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'Sarabun', size: 10 }, boxWidth: 12 } } }
+    }
+  });
+}
+
+/* ---------------------------- Type breakdown ---------------------------- */
+
+function renderTypeBreakdown(rows) {
+  const men = rows.reduce((s, r) => s + (r.men_dispensed || 0), 0);
+  const women = rows.reduce((s, r) => s + (r.women_dispensed || 0), 0);
+  const family = rows.reduce((s, r) => s + (r.family_dispensed || 0), 0);
+  const total = men + women + family;
+
+  const items = [
+    { label: '🚹 ห้องน้ำชาย', value: men, color: '#38BDF8' },
+    { label: '🚺 ห้องน้ำหญิง', value: women, color: '#EC4899' },
+    { label: '♿ ครอบครัว / คนพิการ', value: family, color: '#FBBF24' }
+  ];
+
+  typeBreakdownWrap.innerHTML = items.map(it => {
+    const pct = total > 0 ? Math.round((it.value / total) * 100) : 0;
+    return `
+      <div>
+        <div class="flex justify-between text-xs text-ink mb-1">
+          <span>${it.label}</span>
+          <span class="text-ink/50">${it.value} ม้วน (${pct}%)</span>
+        </div>
+        <div class="h-2.5 rounded-full bg-grape/10 overflow-hidden">
+          <div class="h-full rounded-full" style="width:${pct}%; background:${it.color};"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ---------------------------- Rankings ---------------------------- */
+
+function renderRankingList(container, rows, dimensionKey, labelFn) {
+  const totals = {};
+  rows.forEach(row => {
+    const dimVal = row[dimensionKey];
+    if (!dimVal) return;
+    const { returned } = typeValues(row);
+    totals[dimVal] = (totals[dimVal] || 0) + returned;
+  });
+  const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  if (!sorted.length) {
+    container.innerHTML = `<p class="text-xs text-ink/50">ไม่มีข้อมูล</p>`;
+    return;
+  }
+  const maxVal = sorted[0][1];
+  container.innerHTML = sorted.map(([key, val], i) => `
+    <div class="flex items-center gap-2">
+      <div class="w-5 text-xs text-ink/50 text-center">${i + 1}</div>
+      <div class="flex-1">
+        <div class="flex justify-between text-xs text-ink mb-0.5">
+          <span>${labelFn ? labelFn(key) : key}</span>
+          <span class="text-ink/50">${val} ม้วน</span>
+        </div>
+        <div class="h-2 rounded-full bg-grape/10 overflow-hidden">
+          <div class="h-full rounded-full" style="background:linear-gradient(135deg,#7C3AED,#EC4899); width:${maxVal > 0 ? (val / maxVal) * 100 : 0}%;"></div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderStaffRanking(rows) {
+  const counts = {};
+  rows.forEach(row => {
+    const name = row.staff_name || 'ไม่ระบุชื่อ';
+    counts[name] = (counts[name] || 0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  if (!sorted.length) {
+    rankStaffWrap.innerHTML = `<p class="text-xs text-ink/50">ไม่มีข้อมูล</p>`;
+    return;
+  }
+  const maxVal = sorted[0][1];
+  rankStaffWrap.innerHTML = sorted.map(([name, count], i) => `
+    <div class="flex items-center gap-2">
+      <div class="w-5 text-xs text-ink/50 text-center">${i + 1}</div>
+      <div class="flex-1">
+        <div class="flex justify-between text-xs text-ink mb-0.5">
+          <span>${name}</span>
+          <span class="text-ink/50">${count} รายการ</span>
+        </div>
+        <div class="h-2 rounded-full bg-grape/10 overflow-hidden">
+          <div class="h-full rounded-full" style="background:linear-gradient(135deg,#38BDF8,#7C3AED); width:${maxVal > 0 ? (count / maxVal) * 100 : 0}%;"></div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ---------------------------- KPI cards ---------------------------- */
+
+function renderKpis(rows, dailySeries) {
+  const totalDispensed = rows.reduce((s, r) => s + typeValues(r).dispensed, 0);
+  const totalReturned = rows.reduce((s, r) => s + typeValues(r).returned, 0);
+  statDispensed.textContent = totalDispensed;
+  statReturned.textContent = totalReturned;
+  statNet.textContent = totalDispensed - totalReturned;
+
+  const numDays = dailySeries.length || 1;
+  statAvgPerDay.textContent = (totalDispensed / numDays).toFixed(1);
+
+  if (dailySeries.length) {
+    const maxDay = dailySeries.reduce((a, b) => (b.returned > a.returned ? b : a));
+    const minDay = dailySeries.reduce((a, b) => (b.returned < a.returned ? b : a));
+    statMaxDay.textContent = `${maxDay.date} (${maxDay.returned})`;
+    statMinDay.textContent = `${minDay.date} (${minDay.returned})`;
+  } else {
+    statMaxDay.textContent = '—';
+    statMinDay.textContent = '—';
+  }
+
+  updateVisitorsPerRoll(totalReturned);
+}
+
+function updateVisitorsPerRoll(totalReturned) {
+  const visitors = parseFloat(mallVisitorsInput.value);
+  if (!visitors || totalReturned <= 0) {
+    statVisitorsPerRoll.textContent = '— คน/ม้วน';
+    return;
+  }
+  statVisitorsPerRoll.textContent = `${(visitors / totalReturned).toFixed(1)} คน/ม้วน`;
+}
+
+recalcVisitorsBtn.addEventListener('click', () => {
+  updateVisitorsPerRoll(parseInt(statReturned.textContent, 10) || 0);
+});
+
+/* ---------------------------- Table ---------------------------- */
+
+function formatFloorZone(row) {
+  const parts = [];
+  if (row.floor) parts.push(`ชั้น ${row.floor}`);
+  if (row.zone) parts.push(`โซน ${row.zone}`);
+  return parts.length ? parts.join(' / ') : '—';
+}
+function formatDateTime(iso) { return new Date(iso).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }); }
+
+function renderTable(rows) {
+  rowsTableBody.innerHTML = '';
+  rowCountBadge.textContent = rows.length ? `${rows.length} รายการ` : '';
+
+  if (!rows.length) { tableEmptyMsg.classList.remove('hidden'); return; }
+  tableEmptyMsg.classList.add('hidden');
+
+  const sorted = [...rows].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  sorted.slice(0, 300).forEach(row => {
+    const tr = document.createElement('tr');
+    tr.className = 'rise-in hover:bg-grape/5';
+    tr.innerHTML = `
+      <td class="px-2 py-2.5 whitespace-nowrap text-ink">${formatDateTime(row.created_at)}</td>
+      <td class="px-2 py-2.5 whitespace-nowrap text-ink">${row.staff_name || ''}</td>
+      <td class="px-2 py-2.5 whitespace-nowrap text-ink">${formatFloorZone(row)}</td>
+      <td class="px-2 py-2.5 whitespace-nowrap text-ink">${row.special_location || '—'}</td>
+      <td class="px-2 py-2.5 text-center text-ink bg-mint/5 border-l-2 border-mint/20">${row.men_dispensed || 0}</td>
+      <td class="px-2 py-2.5 text-center text-ink bg-mint/5">${row.women_dispensed || 0}</td>
+      <td class="px-2 py-2.5 text-center text-ink bg-mint/5">${row.family_dispensed || 0}</td>
+      <td class="px-2 py-2.5 text-center text-ink bg-tang/5 border-l-2 border-tang/20">${row.men_returned || 0}</td>
+      <td class="px-2 py-2.5 text-center text-ink bg-tang/5">${row.women_returned || 0}</td>
+      <td class="px-2 py-2.5 text-center text-ink bg-tang/5">${row.family_returned || 0}</td>
+      <td class="px-2 py-2.5 text-center no-print border-l-2 border-grape/10">
+        ${row.image_url
+          ? `<img src="${row.image_url}" data-full="${row.image_url}" class="thumb-img w-9 h-9 rounded-lg object-cover border border-grape/20 cursor-pointer inline-block hover:opacity-80 transition-opacity" alt="รูปหลักฐาน">`
+          : `<span class="text-ink/30">—</span>`}
+      </td>
+      <td class="px-2 py-2.5 max-w-[160px] truncate text-ink/50" title="${row.note || ''}">${row.note || '—'}</td>
+    `;
+    rowsTableBody.appendChild(tr);
+  });
+
+  document.querySelectorAll('.thumb-img').forEach(img => {
+    img.addEventListener('click', () => openImageModal(img.dataset.full));
+  });
+}
+
+const imageModal = document.getElementById('imageModal');
+const modalImage = document.getElementById('modalImage');
+document.getElementById('closeModalBtn').addEventListener('click', closeImageModal);
+imageModal.addEventListener('click', (e) => { if (e.target === imageModal) closeImageModal(); });
+function openImageModal(url) { modalImage.src = url; imageModal.classList.remove('hidden'); }
+function closeImageModal() { imageModal.classList.add('hidden'); modalImage.src = ''; }
+
+/* ---------------------------- Export ---------------------------- */
+
+const EXPORT_COLUMNS = [
+  { key: 'created_at', label: 'วันเวลา', fmt: formatDateTime },
+  { key: 'staff_name', label: 'พนักงาน' },
+  { key: '__floorzone', label: 'สถานที่', fmt: (v, row) => formatFloorZone(row) },
+  { key: 'special_location', label: 'สถานที่พิเศษ' },
+  { key: 'men_dispensed', label: 'เบิกชาย' },
+  { key: 'women_dispensed', label: 'เบิกหญิง' },
+  { key: 'family_dispensed', label: 'เบิกครอบครัว' },
+  { key: 'men_returned', label: 'คืนชาย' },
+  { key: 'women_returned', label: 'คืนหญิง' },
+  { key: 'family_returned', label: 'คืนครอบครัว' },
+  { key: 'note', label: 'หมายเหตุ' }
+];
+
+function buildExportRows() {
+  const rows = [...state.lastFilteredRows].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const header = EXPORT_COLUMNS.map(c => c.label);
+  const body = rows.map(row => EXPORT_COLUMNS.map(c => {
+    const raw = c.key === '__floorzone' ? null : row[c.key];
+    const val = c.fmt ? c.fmt(raw, row) : raw;
+    return val === null || val === undefined ? '' : String(val);
+  }));
+  return { header, body };
+}
+
+function csvEscape(val) {
+  if (/[",\n]/.test(val)) return '"' + val.replace(/"/g, '""') + '"';
+  return val;
+}
+
+function downloadBlob(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+  const { header, body } = buildExportRows();
+  const lines = [header, ...body].map(row => row.map(csvEscape).join(','));
+  downloadBlob('\uFEFF' + lines.join('\r\n'), `toilet-paper-srinakarin-${Date.now()}.csv`, 'text/csv;charset=utf-8;');
+});
+
+document.getElementById('exportExcelBtn').addEventListener('click', () => {
+  const { header, body } = buildExportRows();
+  const theadHtml = `<tr>${header.map(h => `<th>${h}</th>`).join('')}</tr>`;
+  const tbodyHtml = body.map(row => `<tr>${row.map(v => `<td>${v}</td>`).join('')}</tr>`).join('');
+  const html = `<html><head><meta charset="UTF-8"></head><body>
+    <table border="1">${theadHtml}${tbodyHtml}</table>
+  </body></html>`;
+  downloadBlob(html, `toilet-paper-srinakarin-${Date.now()}.xls`, 'application/vnd.ms-excel;charset=utf-8;');
+});
+
+document.getElementById('exportPdfBtn').addEventListener('click', () => {
+  window.print();
+});
+
+/* ---------------------------- Apply ---------------------------- */
+
+async function applyFilters() {
+  globalLoadingMsg.classList.remove('hidden');
+  globalErrorMsg.classList.add('hidden');
+  updatePeriodSubtitle();
+
+  state.floor = filterFloor.value;
+  state.zone = filterZone.value;
+  state.location = filterLocation.value;
+  state.type = filterType.value;
+
+  if (!supabaseReady()) {
+    globalLoadingMsg.classList.add('hidden');
+    globalErrorMsg.textContent = 'ยังไม่ได้ตั้งค่า SUPABASE_URL / SUPABASE_ANON_KEY ด้านบนของสคริปต์';
+    globalErrorMsg.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const allRows = await fetchRows();
+    const filtered = allRows.filter(rowMatchesFilters);
+    state.lastFilteredRows = filtered;
+
+    const dailySeries = dailySeriesForRange(filtered);
+
+    renderKpis(filtered, dailySeries);
+    renderTypeBreakdown(filtered);
+    renderRankingList(rankFloorWrap, filtered, 'floor', (v) => `ชั้น ${v}`);
+    renderRankingList(rankZoneWrap, filtered, 'zone', (v) => `โซน ${v}`);
+    renderRankingList(rankLocationWrap, filtered, 'special_location');
+    renderStaffRanking(filtered);
+    renderTrendChart(dailySeries);
+    renderZoneShareChart(filtered);
+    renderTable(filtered);
+
+    globalLoadingMsg.classList.add('hidden');
+  } catch (err) {
+    console.error(err);
+    globalLoadingMsg.classList.add('hidden');
+    globalErrorMsg.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+    globalErrorMsg.classList.remove('hidden');
+  }
+}
+
+applyBtn.addEventListener('click', applyFilters);
+
+resetBtn.addEventListener('click', () => {
+  setPeriodUI('today');
+  filterFloor.value = 'all';
+  filterZone.value = 'all';
+  filterLocation.value = 'all';
+  filterType.value = 'all';
+  mallVisitorsInput.value = '';
+  applyFilters();
+});
+
+/* ---------------------------- Init ---------------------------- */
+
+setPeriodUI('today');
+applyFilters();
+</script>
+</body>
+</html>
