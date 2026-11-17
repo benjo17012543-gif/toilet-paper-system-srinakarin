@@ -299,7 +299,7 @@
     </div>
 
     <div class="overflow-x-auto -mx-1">
-      <table class="min-w-[900px] w-full text-xs">
+      <table class="min-w-[1000px] w-full text-xs">
         <thead>
           <tr class="text-ink/50 border-b-2 border-grape/15">
             <th rowspan="2" class="px-2 py-2 align-bottom text-center"><input type="checkbox" id="selectAllChk" class="w-4 h-4 accent-purple-600" title="เลือกทั้งหมดในหน้านี้" aria-label="เลือกทั้งหมดในหน้านี้"></th>
@@ -308,8 +308,8 @@
             <th rowspan="2" class="text-left font-medium px-2 py-2 whitespace-nowrap align-bottom">พนักงาน</th>
             <th rowspan="2" class="text-left font-medium px-2 py-2 whitespace-nowrap align-bottom">สถานที่</th>
             <th rowspan="2" class="text-left font-medium px-2 py-2 whitespace-nowrap align-bottom">สถานที่พิเศษ</th>
-            <th colspan="3" class="text-center font-medium px-2 py-1.5 whitespace-nowrap border-b border-mint/20 bg-mint/10 border-l-2 border-mint/30">เบิก</th>
-            <th colspan="3" class="text-center font-medium px-2 py-1.5 whitespace-nowrap border-b border-tang/20 bg-tang/10 border-l-2 border-tang/30">คืน</th>
+            <th colspan="4" class="text-center font-medium px-2 py-1.5 whitespace-nowrap border-b border-mint/20 bg-mint/10 border-l-2 border-mint/30">เบิก</th>
+            <th colspan="4" class="text-center font-medium px-2 py-1.5 whitespace-nowrap border-b border-tang/20 bg-tang/10 border-l-2 border-tang/30">คืน</th>
             <th rowspan="2" class="text-center font-medium px-2 py-2 whitespace-nowrap align-bottom">รูป</th>
             <th rowspan="2" class="text-left font-medium px-2 py-2 whitespace-nowrap align-bottom">หมายเหตุ</th>
           </tr>
@@ -317,9 +317,11 @@
             <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-mint/10 border-l-2 border-mint/30">ชาย</th>
             <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-mint/10">หญิง</th>
             <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-mint/10">ครอบครัว</th>
+            <th class="text-center font-semibold px-2 py-1.5 whitespace-nowrap bg-mint/25 text-mintD">รวม</th>
             <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-tang/10 border-l-2 border-tang/30">ชาย</th>
             <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-tang/10">หญิง</th>
             <th class="text-center font-normal px-2 py-1.5 whitespace-nowrap bg-tang/10">ครอบครัว</th>
+            <th class="text-center font-semibold px-2 py-1.5 whitespace-nowrap bg-tang/25 text-tangD">รวม</th>
           </tr>
         </thead>
         <tbody id="rowsTableBody" class="divide-y divide-grape/10"></tbody>
@@ -415,6 +417,14 @@
           <label class="text-xs text-mintD font-medium">🟢 เบิกใหม่<input id="editFamilyDisp" type="number" min="0" step="1" inputmode="numeric" class="mt-1 w-full rounded-xl border-2 border-mint/30 px-3 py-2.5 text-base text-ink text-center tabular-nums focus:outline-none focus:ring-2 focus:ring-candy/40"></label>
           <label class="text-xs text-tangD font-medium">🟠 คืนแกน<input id="editFamilyRet" type="number" min="0" step="1" inputmode="numeric" class="mt-1 w-full rounded-xl border-2 border-tang/30 px-3 py-2.5 text-base text-ink text-center tabular-nums focus:outline-none focus:ring-2 focus:ring-candy/40"></label>
         </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border-2 border-grape/25 bg-grape/5 p-3">
+      <div class="text-sm font-semibold text-ink mb-2">➕ รวม (ชาย + หญิง + ครอบครัว)</div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="text-xs text-mintD font-medium">🟢 เบิกใหม่รวม<input id="editTotalDisp" type="number" readonly tabindex="-1" class="mt-1 w-full rounded-xl border-2 border-mint/30 bg-mint/10 px-3 py-2.5 text-base font-bold text-ink text-center tabular-nums cursor-default focus:outline-none"></label>
+        <label class="text-xs text-tangD font-medium">🟠 คืนแกนรวม<input id="editTotalRet" type="number" readonly tabindex="-1" class="mt-1 w-full rounded-xl border-2 border-tang/30 bg-tang/10 px-3 py-2.5 text-base font-bold text-ink text-center tabular-nums cursor-default focus:outline-none"></label>
       </div>
     </div>
 
@@ -883,9 +893,11 @@ function render() {
       <td class="px-2 py-2.5 text-center text-ink bg-mint/5 border-l-2 border-mint/20">${num(row.men_dispensed)}</td>
       <td class="px-2 py-2.5 text-center text-ink bg-mint/5">${num(row.women_dispensed)}</td>
       <td class="px-2 py-2.5 text-center text-ink bg-mint/5">${num(row.family_dispensed)}</td>
+      <td class="px-2 py-2.5 text-center font-bold text-mintD bg-mint/20">${num(row.men_dispensed) + num(row.women_dispensed) + num(row.family_dispensed)}</td>
       <td class="px-2 py-2.5 text-center text-ink bg-tang/5 border-l-2 border-tang/20">${num(row.men_returned)}</td>
       <td class="px-2 py-2.5 text-center text-ink bg-tang/5">${num(row.women_returned)}</td>
       <td class="px-2 py-2.5 text-center text-ink bg-tang/5">${num(row.family_returned)}</td>
+      <td class="px-2 py-2.5 text-center font-bold text-tangD bg-tang/20">${num(row.men_returned) + num(row.women_returned) + num(row.family_returned)}</td>
       <td class="px-2 py-2.5 text-center border-l-2 border-grape/10">
         ${img
           ? `<img src="${esc(img)}" data-full="${esc(img)}" class="thumb-img w-9 h-9 rounded-lg object-cover border border-grape/20 cursor-pointer inline-block hover:opacity-80 transition-opacity" alt="รูปหลักฐาน">`
@@ -1007,6 +1019,20 @@ const ZONE_A_FLOORS = ['1', '2', '3', '4'];
 
 let editingId = null;
 
+// ช่อง "รวม" ใน pop-up: อ่านอย่างเดียว คำนวณจากช่องชาย/หญิง/ครอบครัว (ว่างหรือไม่ถูกต้อง = 0) ไม่ส่งไปฐานข้อมูล
+const editTotalDisp = document.getElementById('editTotalDisp');
+const editTotalRet = document.getElementById('editTotalRet');
+function editFieldNum(id) {
+  const v = Number(document.getElementById(id).value);
+  return Number.isFinite(v) ? v : 0;
+}
+function updateEditTotals() {
+  editTotalDisp.value = editFieldNum('editMenDisp') + editFieldNum('editWomenDisp') + editFieldNum('editFamilyDisp');
+  editTotalRet.value = editFieldNum('editMenRet') + editFieldNum('editWomenRet') + editFieldNum('editFamilyRet');
+}
+['editMenDisp', 'editWomenDisp', 'editFamilyDisp', 'editMenRet', 'editWomenRet', 'editFamilyRet']
+  .forEach((id) => document.getElementById(id).addEventListener('input', updateEditTotals));
+
 function renderEditFloorOptions(selected) {
   const list = editZone.value === 'A' ? ZONE_A_FLOORS.slice() : ALL_FLOORS.slice();
   // ถ้าข้อมูลเดิมมีค่าที่อยู่นอกรายการ ให้คงไว้ ไม่ให้หายตอนบันทึก
@@ -1068,6 +1094,7 @@ function openEdit(id) {
   }
   editLocation.value = row.special_location || '';
   COUNT_FIELDS.forEach(([key, inputId]) => { document.getElementById(inputId).value = num(row[key]); });
+  updateEditTotals();
   editNote.value = row.note || '';
   editError.classList.add('hidden');
   applyEditExclusion('init');
